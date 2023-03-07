@@ -1,12 +1,13 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Input } from 'antd';
-import React from 'react';
+import React, { createRef, useRef } from 'react';
 import { Subscription } from 'rxjs';
 import { ActionPanelType } from 'src/common/CommonDefs';
 import { GlobalServiceRegistry } from 'src/services/GlobalServiceRegistry';
 import { ProfileWithCredentials } from 'src/services/profile/ProfileDefs';
 import { LM } from 'src/translations/language-manager';
 import './LauncherTab.scss';
+
 
 const getIntlMessage = (msg: string) => {
   return LM.getMessage(`launcher_tab.${msg}`);
@@ -49,8 +50,10 @@ export class LauncherTab extends React.Component<any, LauncherTabState> {
     const { profiles, filter } = this.state;
     const filteredProfiles = profiles.filter(inst => !filter || (inst.name.toLowerCase()).includes(filter.toLowerCase()))
 
+    const ref = createRef<HTMLDivElement>()
+
     return <div className="launcher-tab-wrapper">
-      <div className="title-section">
+      <div className="title-section" ref={ref}>
         <div className="title">{getIntlMessage("title")}</div>
         <div className="sub-title">{getIntlMessage("sub_title")}</div>
       </div>
