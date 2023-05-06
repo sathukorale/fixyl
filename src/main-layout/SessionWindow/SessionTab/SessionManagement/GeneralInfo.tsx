@@ -131,8 +131,10 @@ export class GeneralInfo extends React.Component<GeneralInfoProps, GeneralInfoSt
 
     componentDidMount() {
         this.sessionSub = this.props.session.getFixEventObservable().subscribe(eventData => {
-            this.forceUpdate();
-            this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT, connecting: false })
+            if (this.state.connected != (eventData.event !== FixSessionEventType.DISCONNECT) || this.state.connecting) {
+                this.forceUpdate();
+                this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT, connecting: false });
+            }
         })
     }
 

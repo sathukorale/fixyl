@@ -96,9 +96,11 @@ export class NewMessageFromRaw extends React.Component<NewMessageFromRawProps, N
     }
 
     componentDidMount() {
-        this.sessionSub = this.props.session.getFixEventObservable().subscribe(eventData => {
-            this.forceUpdate();
-            this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT })
+        this.sessionSub = this.props.session.getFixEventObservable().subscribe(eventData => {            
+            if (this.state.connected != (eventData.event !== FixSessionEventType.DISCONNECT)) {
+                this.forceUpdate();
+                this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT })
+            }
         })
     }
 

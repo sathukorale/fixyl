@@ -133,7 +133,7 @@ export class FieldWrapper extends React.Component<DatePrickerProps, DatePrickerS
 
         return (
             <div className="field-wrapper">
-                <Popover
+                {customActionVisible && <Popover
                     content={this.getMenu()}
                     placement="top"
                     onVisibleChange={e => this.setState({ customActionVisible: e })}
@@ -141,7 +141,7 @@ export class FieldWrapper extends React.Component<DatePrickerProps, DatePrickerS
                     overlayClassName="custom-action-overlay"
                 >
                     <div className="custom-btn" ><MoreOutlined /></div>
-                </Popover>
+                </Popover>}
 
                 {isCustomValue && <div className="custom-field">{value}</div>}
                 {!isCustomValue && children}

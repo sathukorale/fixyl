@@ -34,8 +34,10 @@ export class NewMessage extends React.Component<NewMessageProps, NewMessageState
 
     componentDidMount() {
         this.sessionSub = this.props.session.getFixEventObservable().subscribe(eventData => {
-            this.forceUpdate();
-            this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT })
+            if (this.state.connected != (eventData.event !== FixSessionEventType.DISCONNECT)) {
+                this.forceUpdate();
+                this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT })
+            }
         })
     }
 
