@@ -241,6 +241,7 @@ export class FixSession {
 
 
     private onDisconnect() {
+        this.hbMonitor?.stopHBTimer();
         log('(' + this.profile.name + ') disconnected');
         this.connected = false;
         this.socketDataSubject.next({ event: FixSessionEventType.DISCONNECT })
@@ -280,6 +281,7 @@ export class FixSession {
                                 break;
                             case "error":
                                 log('(' + this.profile.name + ') connection error');
+                                this.hbMonitor?.stopHBTimer();
                                 this.connected = false;
                                 this.socketDataSubject.next({ event: FixSessionEventType.DISCONNECT })
                                 reject(new SocketTimeOutError());
@@ -395,6 +397,7 @@ export class FixSession {
                 this.onResendRequest(msg);
                 break;
             case "logout":
+                this.hbMonitor?.stopHBTimer();
                 this.disconnect(true);
                 const data = msg.getValue();
                 if (data.Text) {
@@ -420,6 +423,9 @@ export class FixSession {
                 const interval = Number(msg.getValue()["HeartBtInt"] ?? DEFAULT_HB_INTERVAL);
                 this.hbMonitor = new HBMonitor(this.sendTestRequest, this.disconnect, this.sendHB, interval);
                 break;
+
+            case "logout":
+                this.hbMonitor?.stopHBTimer();
         }
     }
 
