@@ -6,6 +6,7 @@ import { LM } from 'src/translations/language-manager';
 import { removeFalsyKeys } from 'src/utils/utils';
 import { FixCommMsg, } from '../IntraTabCommunicator';
 import './MessageView.scss';
+import { AiOutlineCopy } from 'react-icons/ai';
 
 
 const getIntlMessage = (msg: string, options?: any) => {
@@ -71,6 +72,7 @@ export class MessageView extends React.Component<MessageViewProps, any> {
           <th>{getIntlMessage("tag")}</th>
           <th>{getIntlMessage("name")}</th>
           <th>{getIntlMessage("value")}</th>
+          <th></th>
         </tr>
       </thead>
 
@@ -86,12 +88,25 @@ export class MessageView extends React.Component<MessageViewProps, any> {
                 {Array.isArray(processedValue[key]) && !this.isNotMulti(def) && <div className="group-size">{processedValue[key].length} </div>}
                 {this.renderValues(processedValue[key])}
               </td>
+              <td >
+                <AiOutlineCopy onClick={() => this.copyToClipboard(JSON.stringify(processedValue[key]))} style={{
+                  cursor: "pointer"
+                }} />
+              </td>
             </tr>;
           } else {
+            const value = def?.options ? this.getValueFromOptions(def.options, processedValue[key]) : processedValue[key];
             return <tr key={index}>
               <td>{def?.number}</td>
               <td>{key}</td>
-              <td>{def?.options ? this.getValueFromOptions(def.options, processedValue[key]) : processedValue[key]}</td>
+              <td>{value}</td>
+              <td style={{
+                  width: "1%",
+                  whiteSpace: "nowrap",
+              }}>
+                <AiOutlineCopy onClick={() => this.copyToClipboard(value)} style={{
+                  cursor: "pointer"
+                }} /></td>
             </tr>
           }
         })}
