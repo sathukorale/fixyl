@@ -240,8 +240,25 @@ export class Favorites extends React.Component<FavoritesProps, FavoritesState> {
                 />
             </div>
             {editMsg && <Drawer
-                title={<div className="edit-drawer-header">{getIntlMessage("edit_msg", { msg: editMsg.name })}
-                    <Form className="form-container">
+                title={<div className="edit-drawer-header"
+                            style={{
+                                display: 'flex'
+                            }}>
+                    <span style={{
+                        whiteSpace: "nowrap",
+                        flexShrink: 1,
+                        flexGrow: 1,
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        paddingRight: '5px'
+                    }}>
+                        {getIntlMessage("edit_msg", { msg: editMsg.name })}
+                    </span>
+                    <Form className="form-container" style={{
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                        flexGrow: 0,
+                    }}>
                         <Form.Item name="switch" label={getIntlMessage("remove_non_filled_fields")} >
                             <Switch checked={removeNonFilledFields} onChange={this.onNonFilledChanged} />
                         </Form.Item>
@@ -251,7 +268,7 @@ export class Favorites extends React.Component<FavoritesProps, FavoritesState> {
                 onClose={this.onEditClose}
                 visible={editVisible}
                 getContainer={false}
-                width={420}
+                width={"100%"}
                 style={{ position: 'absolute' }}
             >
                 <FixForm message={editMsg} session={session} name="fav" value={editMsg.getValue()} hideTitle={true}

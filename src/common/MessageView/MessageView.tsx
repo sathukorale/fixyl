@@ -88,11 +88,7 @@ export class MessageView extends React.Component<MessageViewProps, any> {
                 {Array.isArray(processedValue[key]) && !this.isNotMulti(def) && <div className="group-size">{processedValue[key].length} </div>}
                 {this.renderValues(processedValue[key])}
               </td>
-              <td >
-                <AiOutlineCopy onClick={() => this.copyToClipboard(JSON.stringify(processedValue[key]))} style={{
-                  cursor: "pointer"
-                }} />
-              </td>
+              <td></td>
             </tr>;
           } else {
             const value = def?.options ? this.getValueFromOptions(def.options, processedValue[key]) : processedValue[key];
