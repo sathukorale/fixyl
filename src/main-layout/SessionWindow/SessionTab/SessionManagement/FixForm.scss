@@ -52,6 +52,16 @@
 
             &-fields {
             }
+
+            .fix-optional-component {
+                cursor: help;
+                color: darkgoldenrod !important
+            }
+
+            .fix-optional-field {
+                cursor: help;
+                color: rgb(205, 172, 89) !important
+            }
         }
 
         .fix-group {

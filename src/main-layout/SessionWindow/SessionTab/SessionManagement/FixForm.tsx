@@ -331,7 +331,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         return <IgnorableInput enableIgnore={enableIgnore} componentProps={{ field, required, parent, fieldIterationIndex }} />
     }
 
-    renderField = (field: FixField, level: number, fieldIterationIndex: number, parent: string) => {
+    renderField = (field: FixField, level: number, fieldIterationIndex: number, parent: string, isParentRequired: boolean) => {
         const { def } = field;
         const fieldName = `${parent}__${def.name}__${fieldIterationIndex}`;
 
@@ -342,15 +342,28 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
             }
         }
 
+        const isRequired = isParentRequired && (field.required || false);
+        const isChildRequiredButParentNot = !isParentRequired && (field.required || false);
+
         return <div className="fix-field-wrapper" style={{ marginLeft: level * 10 }}>
-            {<Form.Item name={fieldName} label={<span>{def.name}<span className="field-number">[{def.number}]</span></span>}
-                rules={[{ required: field.required, message: 'Please input valid value!' }]} >
-                {this.getFieldRender(field, field.required, parent, fieldIterationIndex)}
+            {<Form.Item 
+                name={fieldName} 
+                label={
+                    <span className={ isChildRequiredButParentNot ? 'fix-optional-field' : undefined } 
+                          title={ isChildRequiredButParentNot ? "This field is marked required, but the parent component/group is optional." : undefined }>
+                        {def.name}
+                        <span className="field-number">[{def.number}]</span>
+                    </span>
+                }
+                rules={[{ required: isRequired, message: 'Please input valid value!' }]} >
+                {
+                    this.getFieldRender(field, isRequired, parent, fieldIterationIndex)
+                }
             </Form.Item>}
         </div>
     }
 
-    renderGroups = (group: FixComplexType, level: number, parent: string) => {
+    renderGroups = (group: FixComplexType, level: number, parent: string, isParentRequired: boolean) => {
         const newLevel = level++;
         if (!group.groupInstances[parent]) {
             if (group.required) {
@@ -367,6 +380,8 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
             this.forceUpdate();
         }
 
+        const isRequired = isParentRequired && (group.required || false);
+
         return <div className="fix-group" style={{ marginLeft: level * 10 }}>
             <div className="fix-group-title">{getIntlMessage("group", { type: `${group.name} [${group.id}]` })}
                 <div className="fix-group-insert" onClick={() => {
@@ -377,7 +392,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                 {(group.groupInstances[parent] as any[])?.map((val, i) => {
                     return <div className="repitition-block" key={i}>
                         <div className="repitition-block-content">
-                            {this.renderFormFields(group, newLevel, i, `${parent}|G:${group.name}:${i}`)}
+                            {this.renderFormFields(group, newLevel, i, `${parent}|G:${group.name}:${i}`, isRequired)}
                         </div>
                         <MinusCircleOutlined
                             className="dynamic-delete-button"
@@ -389,28 +404,40 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         </div>
     }
 
-    renderComponents = (component: FixComplexType, level: number, parent: string) => {
+    renderComponents = (component: FixComplexType, level: number, parent: string, isParentRequired: boolean) => {
         const newLevel = level++;
+        const isRequired = isParentRequired && (component.required || false);        
+        const isChildRequiredButParentNot = !isParentRequired && (component.required || false);
+
         return <div className="fix-component" style={{ marginLeft: level * 10 }} key={component.name + newLevel}>
-            <div className="fix-component-title">{getIntlMessage("component", { type: component.name })}</div>
+            <div title={ isChildRequiredButParentNot ? "This field is marked required, but the parent component/group is optional." : undefined }
+                 className={
+                     "fix-component-title" + (isChildRequiredButParentNot ? ' fix-optional-component' : "")
+                 }>
+                    {getIntlMessage("component", { type: component.name })}
+                    {
+                        (!isRequired) && 
+                        <span className="fix-optional-component" title='This item is marked optional, thus all required fields under it will be treated as optional as well.'> (Optional)</span>
+                    }
+            </div>
             <div className="fix-component-fields">
-                {this.renderFormFields(component, newLevel, 0, `${parent}|C:${component.name}:0`)}
+                {this.renderFormFields(component, newLevel, 0, `${parent}|C:${component.name}:0`, isRequired)}
             </div>
         </div>
     }
 
-    private renderFormFields = (message: FixComplexType, level: number, fieldIterationIndex: number, parent: string) => {
+    private renderFormFields = (message: FixComplexType, level: number, fieldIterationIndex: number, parent: string, isParentRequired: boolean = true) => {
         return message.getFieldOrder().map(inst => {
             switch (inst.type) {
                 case "field":
                     const field = message.fields.get(inst.name);
-                    return field && this.renderField(field, level, fieldIterationIndex, parent)
+                    return field && this.renderField(field, level, fieldIterationIndex, parent, isParentRequired)
                 case "component":
                     const comp = message.components.get(inst.name);
-                    return comp && this.renderComponents(comp, level, parent)
+                    return comp && this.renderComponents(comp, level, parent, isParentRequired)
                 case "group":
                     const group = message.groups.get(inst.name);
-                    return group && this.renderGroups(group, level, parent)
+                    return group && this.renderGroups(group, level, parent, isParentRequired)
                 default:
                     return null;
             }
@@ -422,7 +449,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         const { currentMarkedIndex, markedItems } = this.state;
 
         return <div className="search-wrapper">
-            <Form ref={this.searchFormRef}>
+            <Form ref={this.searchFormRef} scrollToFirstError={true}>
                 <Form.Item name="search">
                     <Input placeholder={getIntlMessage("search")} onChange={(e) => {
                         this.setState({ searchText: e.target.value, markedItems: [], currentMarkedIndex: undefined }, () => {
@@ -492,26 +519,33 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                 </div>
             </div>}
             {this.renderSearchForm()}
-            {initialized && <Form ref={this.formRef} layout="horizontal" initialValues={this.getInitialValues()} labelCol={{ span: 10 }} labelAlign="left" onFinish={this.onFinished}>
-                <div className="form-body" id={`search-node${name}`}>
-                    {this.renderFormFields(message, 0, 0, "root")}
-                </div>
-                {!viewOnly && <div className="form-footer">
-                    {!saveMode && <React.Fragment>
-                        <Popover
-                            content={<SaveAsForm togglePopover={this.togglePopover} name={preferredFavName}
-                                onAddToFavorites={(data) => { this.onAddToFavorites(data.name); }} />}
-                            title={getIntlMessage("save_as").toUpperCase()}
-                            placement="top"
-                            visible={confirmVisible}
-                        >
-                            <Button type="ghost" loading={saving} icon={<StarOutlined />} onClick={() => this.togglePopover(true)}>{getIntlMessage("add_to_fav")}</Button>
-                        </Popover>
+            {initialized && 
+                <Form ref={this.formRef} 
+                      layout="horizontal" 
+                      initialValues={this.getInitialValues()} 
+                      labelCol={{ span: 10 }} 
+                      labelAlign="left" 
+                      onFinish={this.onFinished}
+                      scrollToFirstError={true}>
+                    <div className="form-body" id={`search-node${name}`}>
+                        {this.renderFormFields(message, 0, 0, "root")}
+                    </div>
+                    {!viewOnly && <div className="form-footer">
+                        {!saveMode && <React.Fragment>
+                            <Popover
+                                content={<SaveAsForm togglePopover={this.togglePopover} name={preferredFavName}
+                                    onAddToFavorites={(data) => { this.onAddToFavorites(data.name); }} />}
+                                title={getIntlMessage("save_as").toUpperCase()}
+                                placement="top"
+                                visible={confirmVisible}
+                            >
+                                <Button type="ghost" loading={saving} icon={<StarOutlined />} onClick={() => this.togglePopover(true)}>{getIntlMessage("add_to_fav")}</Button>
+                            </Popover>
 
-                        <Button disabled={disabled} htmlType="submit" type="primary" icon={<SendOutlined />}>{getIntlMessage("send")}</Button>
-                    </React.Fragment>}
-                    {saveMode && <Button disabled={disabled} htmlType="submit" type="primary" className="save-btn" icon={<SendOutlined />}>{getIntlMessage("save")}</Button>}
-                </div>}
+                            <Button disabled={disabled} htmlType="submit" type="primary" icon={<SendOutlined />}>{getIntlMessage("send")}</Button>
+                        </React.Fragment>}
+                        {saveMode && <Button disabled={disabled} htmlType="submit" type="primary" className="save-btn" icon={<SendOutlined />}>{getIntlMessage("save")}</Button>}
+                    </div>}
             </Form>}
         </div>
 
