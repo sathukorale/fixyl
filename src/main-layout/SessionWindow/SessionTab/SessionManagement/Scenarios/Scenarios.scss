@@ -80,6 +80,36 @@
             color: var(--accent-1);
         }
 
+        > .ant-collapse {
+            border: 0px !important;
+            background-color: transparent !important;
+
+            > .ant-collapse-item:not(:first-child) {
+                margin-top: 20px !important;
+            }
+
+            .ant-collapse-item:not(:first-child) {
+                margin-top: 10px !important;
+            }
+
+            .ant-collapse-item {
+                border-bottom: 0px !important;
+                border: 1px dimgray solid !important;
+
+                .ant-collapse-content .ant-collapse-header {
+                    background: rgb(55, 55, 55);
+                }
+
+                .ant-collapse-content .ant-collapse-content {
+                    background: rgb(50, 55, 50);
+                }
+
+                .msg-header button {
+                    background: rgb(50, 75, 50);
+                }
+            }
+        }
+
         .ant-tree {
             background-color: transparent !important;
             color: var(--text-color);

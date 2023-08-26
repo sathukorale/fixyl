@@ -184,7 +184,7 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
                     <span>{stage.getState()}</span>
                 </Tooltip>
             </div>}
-            <div className="skip-stage">{<Checkbox disabled={this.isDisabled()} checked={stage.isSkipped()} onChange={e => {
+            <div className="skip-stage" onClick={e => e.stopPropagation()}>{<Checkbox disabled={this.isDisabled()} checked={stage.isSkipped()} onChange={e => {
                 stage.setSkipped(e.target.checked);
                 this.forceUpdate();
             }}>{getIntlMessage("skip")}</Checkbox>
