@@ -101,8 +101,10 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
         })
 
         this.sessionSub = this.props.session.getFixEventObservable().subscribe(eventData => {
-            this.forceUpdate();
-            this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT })
+            if (this.state.connected != (eventData.event !== FixSessionEventType.DISCONNECT)) {
+                this.forceUpdate();
+                this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT })
+            }
         })
     }
 

@@ -153,8 +153,10 @@ export class ScenarioInstance extends React.Component<ScenarioInstanceProps, Sce
     componentDidMount() {
 
         this.sessionSub = this.props.session.getFixEventObservable().subscribe(eventData => {
-            this.forceUpdate();
-            this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT })
+            if (this.state.connected != (eventData.event !== FixSessionEventType.DISCONNECT)) {
+                this.forceUpdate();
+                this.setState({ connected: eventData.event !== FixSessionEventType.DISCONNECT })
+            }
         })
 
         this.updateSub = this.props.scenario.getStageUpdateObservable().subscribe(() => {
