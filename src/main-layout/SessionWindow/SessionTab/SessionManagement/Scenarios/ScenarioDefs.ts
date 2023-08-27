@@ -102,17 +102,17 @@ export class Stage {
         return this.failedReason;
     }
 
-    private validateInputValues(expectedValues: any, receviedValues: any): { state: boolean, failedReason?: string } {
+    private validateInputValues(property: String, expectedValues: any, receviedValues: any): { state: boolean, failedReason?: string } {
         if (expectedValues === receviedValues) return { state: true };
 
         if (!(expectedValues instanceof Object) || !(receviedValues instanceof Object)) return {
             state: false,
-            failedReason: getIntlMessage("input_output_validation_failed_object", { exp: !(expectedValues instanceof Object), recv: !(receviedValues instanceof Object) })
+            failedReason: getIntlMessage("input_output_validation_failed_object", { exp: !(expectedValues instanceof Object), recv: !(receviedValues instanceof Object), name: property })
         };
 
         if (expectedValues.constructor !== receviedValues.constructor) return {
             state: false,
-            failedReason: getIntlMessage("input_output_validation_failed_constructor", { exp: expectedValues.constructor.name, recv: receviedValues.constructor.name })
+            failedReason: getIntlMessage("input_output_validation_failed_constructor", { exp: expectedValues.constructor.name, recv: receviedValues.constructor.name, name: property })
         };;
 
         for (var p in expectedValues) {
@@ -120,7 +120,7 @@ export class Stage {
 
             if (!receviedValues.hasOwnProperty(p)) return {
                 state: false,
-                failedReason: getIntlMessage("input_output_validation_failed_property", { exp: p })
+                failedReason: getIntlMessage("input_output_validation_failed_property", { exp: p, name: p })
             };
 
             // eslint-disable-next-line
@@ -149,10 +149,10 @@ export class Stage {
 
             if (typeof (expectedValues[p]) !== "object") return {
                 state: false,
-                failedReason: getIntlMessage("input_output_validation_failed_expected", { exp: p })
+                failedReason: getIntlMessage("input_output_validation_failed_expected", { exp: p, name: p })
             };
 
-            const ret = this.validateInputValues(expectedValues[p], receviedValues[p]);
+            const ret = this.validateInputValues(p, expectedValues[p], receviedValues[p]);
             if (!ret.state) return ret;
         }
 
@@ -177,7 +177,13 @@ export class Stage {
 
                             removeFalsyKeys(expectedValues)
 
-                            const ret = this.validateInputValues(expectedValues, receviedValues);
+                            console.log("Comparing---------------------------");
+                            console.log(expectedMsg);
+                            console.log("And---------------------------------");
+                            console.log(receviedValues);
+                            console.log("Done--------------------------------");
+
+                            const ret = this.validateInputValues(data.msg.name, expectedValues, receviedValues);
                             if (ret.state) {
                                 expectedMsg.state = "SUCCESS";
                                 this.failedReason = "";

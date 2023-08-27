@@ -240,10 +240,10 @@
 	"scenario_state": {
 		"msg_timeout": "Response timedout. Expected output not received within { time } seconds",
 		"msg_connection_error": "Session disconnected",
-		"input_output_validation_failed_object": "Invalid object type received as expected: { exp } | received: { recv }",
-		"input_output_validation_failed_constructor": "Expected and received objects are different. Expected: { exp } | Received: { recv }",
-		"input_output_validation_failed_property": "Expected property is missing in the response. Expected: { exp }",
-		"input_output_validation_failed_expected": "Invalid expected value: Expected: { exp }"
+		"input_output_validation_failed_object": "Invalid object type received as expected: { exp } | received: { recv } | name: { name }",
+		"input_output_validation_failed_constructor": "Expected and received objects are different. Expected: { exp } | Received: { recv } | name: { name }",
+		"input_output_validation_failed_property": "Expected property is missing in the response. Expected: { exp } | name: { name }",
+		"input_output_validation_failed_expected": "Invalid expected value: Expected: { exp } | name: { name }"
 	},
 	"ignore_input": {
 		"ignore": "Ignore",

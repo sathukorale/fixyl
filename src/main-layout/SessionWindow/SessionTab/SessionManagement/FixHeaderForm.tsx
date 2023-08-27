@@ -277,8 +277,8 @@ export class FixHeaderForm extends React.Component<FixHeaderFormProps, FixHeader
     }
 
 
-    private getFieldRender = (field: FixField, required: boolean, parent: string, fieldIterationIndex: number) => {
-        return <IgnorableInput componentProps={{ field, required, parent, fieldIterationIndex }} />
+    private getFieldRender = (fieldName: string, field: FixField, required: boolean, parent: string, fieldIterationIndex: number) => {
+        return <IgnorableInput fieldId={fieldName} componentProps={{ field, required, parent, fieldIterationIndex }} />
     }
 
     renderField = (field: FixField, level: number, fieldIterationIndex: number, parent: string) => {
@@ -288,7 +288,7 @@ export class FixHeaderForm extends React.Component<FixHeaderFormProps, FixHeader
         return <div className="fix-field-wrapper" key={fieldName} style={{ marginLeft: level * 10 }}>
             {<Form.Item name={fieldName} label={<span>{def.name}<span className="field-number">[{def.number}]</span></span>}
                 rules={[{ required: field.required, message: 'Please input valid value!' }]} >
-                {this.getFieldRender(field, field.required, parent, fieldIterationIndex)}
+                {this.getFieldRender(fieldName, field, field.required, parent, fieldIterationIndex)}
             </Form.Item>}
         </div>
     }

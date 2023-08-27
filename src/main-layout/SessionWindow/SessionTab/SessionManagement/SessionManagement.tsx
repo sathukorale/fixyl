@@ -12,6 +12,7 @@ import { Favorites } from './Favorites';
 import { Scenarios } from './Scenarios/Scenarios';
 import { NewMessageFromRaw } from './NewMessageFromRaw';
 import { Subscription } from 'rxjs';
+import { InfoCircleOutlined, StarFilled, PlusSquareOutlined } from '@ant-design/icons';
 
 const { TabPane } = Tabs;
 
@@ -81,20 +82,20 @@ export class SessionManagement extends React.Component<SessionManagementProps, S
       </div>
       <div className="tab-view">
         <Tabs defaultActiveKey="0">
-          <TabPane tab={getIntlMessage("general")} key="0">
+          <TabPane tab={getIntlMessage("general")} key="0" >
             <GeneralInfo session={session} />
           </TabPane>
           <TabPane tab={getIntlMessage("new_msg")} key="1">
             <NewMessage session={session} />
-          </TabPane>
-          <TabPane tab={getIntlMessage("new_msg_from_raw_data")} key="2">
-            <NewMessageFromRaw session={session} />
           </TabPane>
           <TabPane tab={getIntlMessage("favorites")} key="3">
             <Favorites session={session} />
           </TabPane>
           <TabPane tab={getIntlMessage("scenarios")} key="4">
             <Scenarios session={session} />
+          </TabPane>
+          <TabPane tab={getIntlMessage("new_msg_from_raw_data")} key="2">
+            <NewMessageFromRaw session={session} />
           </TabPane>
         </Tabs>
       </div>

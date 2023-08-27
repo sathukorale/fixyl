@@ -2,6 +2,7 @@ import {
     CloseOutlined, MinusCircleOutlined, PlusOutlined,
     SendOutlined, StarOutlined, DownOutlined, UpOutlined
 } from '@ant-design/icons';
+import { LogoutOutlined, RollbackOutlined } from '@ant-design/icons';
 import { Form, Input, Button, Popover } from 'antd';
 import moment from 'moment';
 import React, { useRef } from 'react';
@@ -273,7 +274,8 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
             ret = { ...ret, ...fieldData, ...groupData, ...componentData }
         });
 
-        def.groupInstances[namePrefix] = def.groupInstances[namePrefix] ?? (inputData ? inputData.map(() => ({})) : [])
+        var ignorable = this.props.enableIgnore ?? false;
+        def.groupInstances[namePrefix] = def.groupInstances[namePrefix] ?? (ignorable ? "{ignore}" : (inputData ? inputData.map(() => ({})) : []));
 
         return ret;
     }
@@ -326,9 +328,9 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         this.setState({ confirmVisible: state })
     }
 
-    private getFieldRender = (field: FixField, required: boolean, parent: string, fieldIterationIndex: number) => {
+    private getFieldRender = (fieldName: string, field: FixField, required: boolean, parent: string, fieldIterationIndex: number) => {
         const { enableIgnore } = this.props;
-        return <IgnorableInput enableIgnore={enableIgnore} componentProps={{ field, required, parent, fieldIterationIndex }} />
+        return <IgnorableInput fieldId={fieldName} enableIgnore={enableIgnore} componentProps={{ field, required, parent, fieldIterationIndex }} />
     }
 
     renderField = (field: FixField, level: number, fieldIterationIndex: number, parent: string, isParentRequired: boolean) => {
@@ -347,7 +349,9 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
 
         return <div className="fix-field-wrapper" style={{ marginLeft: level * 10 }}>
             {<Form.Item 
-                name={fieldName} 
+                name={fieldName}
+                key={fieldName}
+                id={fieldName}
                 label={
                     <span className={ isChildRequiredButParentNot ? 'fix-optional-field' : undefined } 
                           title={ isChildRequiredButParentNot ? "This field is marked required, but the parent component/group is optional." : undefined }>
@@ -355,9 +359,10 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                         <span className="field-number">[{def.number}]</span>
                     </span>
                 }
-                rules={[{ required: isRequired, message: 'Please input valid value!' }]} >
+                rules={[{ required: isRequired, message: 'Please input valid value!' }]} 
+            >
                 {
-                    this.getFieldRender(field, isRequired, parent, fieldIterationIndex)
+                    this.getFieldRender(fieldName, field, isRequired, parent, fieldIterationIndex)
                 }
             </Form.Item>}
         </div>
@@ -365,7 +370,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
 
     renderGroups = (group: FixComplexType, level: number, parent: string, isParentRequired: boolean) => {
         const newLevel = level++;
-        if (!group.groupInstances[parent]) {
+        if (!group.groupInstances[parent] && !(this.props.enableIgnore || false)) {
             if (group.required) {
                 group.groupInstances[parent] = [{}];
             } else {
@@ -381,15 +386,36 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
         }
 
         const isRequired = isParentRequired && (group.required || false);
+        const isIgnored = group.groupInstances[parent] === "{ignore}";
 
         return <div className="fix-group" style={{ marginLeft: level * 10 }}>
             <div className="fix-group-title">{getIntlMessage("group", { type: `${group.name} [${group.id}]` })}
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                {
+                    (this.props.enableIgnore ?? false) && (
+                        (!isIgnored) 
+                        ? 
+                        <div onClick={() => {
+                            group.groupInstances[parent] = "{ignore}";
+                            this.forceUpdate(); 
+                        }} className="ignore-btn"><LogoutOutlined color='white' /></div>
+                        :
+                        <div onClick={() => {
+                            group.groupInstances[parent] = [];
+                            this.forceUpdate();
+                        }} className="ignore-btn"><RollbackOutlined color='white' />&nbsp;&nbsp;&lt;-- Field Ignored --&gt;</div>
+                    )
+                }
+                
                 <div className="fix-group-insert" onClick={() => {
+                    if (isIgnored || !group.groupInstances[parent])
+                        group.groupInstances[parent] = [];
                     group.groupInstances[parent].push({})
                     this.forceUpdate();
                 }}><PlusOutlined /></div></div>
-            <div className="fix-group-fields">
-                {(group.groupInstances[parent] as any[])?.map((val, i) => {
+            {(!isIgnored) && <div className="fix-group-fields">
+                {
+                (group.groupInstances[parent] as any[])?.map((val, i) => {
                     return <div className="repitition-block" key={i}>
                         <div className="repitition-block-content">
                             {this.renderFormFields(group, newLevel, i, `${parent}|G:${group.name}:${i}`, isRequired)}
@@ -401,6 +427,7 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                     </div>
                 })}
             </div>
+            }
         </div>
     }
 
@@ -526,7 +553,11 @@ export class FixForm extends React.Component<FixFormProps, FixFormState> {
                       labelCol={{ span: 10 }} 
                       labelAlign="left" 
                       onFinish={this.onFinished}
-                      scrollToFirstError={true}>
+                      scrollToFirstError={{
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'center',
+                      }}>
                     <div className="form-body" id={`search-node${name}`}>
                         {this.renderFormFields(message, 0, 0, "root")}
                     </div>
