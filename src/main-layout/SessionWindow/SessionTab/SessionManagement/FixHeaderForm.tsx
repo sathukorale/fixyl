@@ -86,7 +86,11 @@ export class FixHeaderForm extends React.Component<FixHeaderFormProps, FixHeader
 
     private getGroupValues = (def: FixMessage, inputData: any, namePrefix: string) => {
         const ret: any = [];
-        (def.groupInstances[namePrefix] as any[])?.forEach((inst: any, index) => {
+        let groups = def.groupInstances[namePrefix];
+        groups = groups == "{ignore}" ? [] : groups;
+        groups = groups ?? [];
+
+        ((groups) as any[])?.forEach((inst: any, index) => {
             const fieldData = this.getFieldValues(def, inputData, `${namePrefix}|G:${def.name}:${index}`, index)
             let groupData: any = {};
             def.groups.forEach(group => {
