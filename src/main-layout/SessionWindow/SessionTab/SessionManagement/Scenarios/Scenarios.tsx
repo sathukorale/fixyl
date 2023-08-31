@@ -10,6 +10,7 @@ import { Button, Collapse, Popover, Form, Input, Menu, Dropdown } from 'antd';
 import { ScenarioInstance } from './ScenarioInstance';
 import { DownloadOutlined, PlusOutlined, SendOutlined, SettingOutlined } from '@ant-design/icons';
 import { Toast } from 'src/common/Toast/Toast';
+import { InputBox } from 'src/common/Modal/InputBox';
 
 const { Panel } = Collapse;
 
@@ -72,9 +73,15 @@ interface ScenariosProps {
     session: FixSession;
 }
 
+interface CopyScenario {
+    visible: boolean,
+    instance?: Scenario
+}
+
 interface ScenariosState {
     connected: boolean,
     addScenarioVisible: boolean
+    copyScenario: CopyScenario
 }
 
 export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
@@ -87,6 +94,10 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
         super(props)
         this.state = {
             addScenarioVisible: false,
+            copyScenario : {
+                visible : false,
+                instance: undefined
+            },
             connected: this.props.session.isReady()
         }
 
@@ -166,6 +177,31 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
             })
     }
 
+    private copyScenario = (inst: Scenario, name: string) => {
+        name = name?.trim() ?? null;
+        if (! name) {
+            return;
+        }
+        
+        if (this.scenarios.get(name)) {
+            Toast.error("Another scenario by the same name exists already");
+            return;
+        }
+
+        let scenario : Scenario = Object.assign(Object.create(Object.getPrototypeOf(inst)), inst);
+        scenario.name = name;        
+
+        GlobalServiceRegistry.scenarioManager.saveScenario(this.props.session.getProfile(), scenario).then(() => {
+            Toast.success(getIntlMessage("msg_saving_success_title"), getIntlMessage("msg_saving_success", { name: scenario.name }));
+
+            this.scenarios.set(scenario.name, { scenario, sub: scenario.getStageUpdateObservable().subscribe(() => this.forceUpdate()) })
+            this.forceUpdate();
+        }).catch(err => {
+            console.error("Failed to save scenario", err);
+            Toast.error(getIntlMessage("msg_saving_failed_title"), getIntlMessage("msg_saving_failed"));
+        });
+    }
+
     private addScenarioViaImport(fileName: string, data: string, counter: number) {
         const deduplicatedName = counter ? `${fileName}_${counter}` : fileName;
         if (this.scenarios.has(deduplicatedName)) {
@@ -221,17 +257,28 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
     }
 
     private getMenu = (inst: Scenario) => {
-        return <Menu>
+        return <Menu onClick={e => {
+            e.domEvent.stopPropagation();
+        }} >
             <Menu.Item key="1" onClick={() => { this.saveScenario(inst) }}>{getIntlMessage("save")}</Menu.Item>
             <Menu.Item key="2" onClick={() => { this.removeScenario(inst.name) }}>{getIntlMessage("delete")}</Menu.Item>
             <Menu.Item key="3" onClick={() => { this.exportScenario(inst) }}>{getIntlMessage("export")}</Menu.Item>
+            <Menu.Item key="4" onClick={() => { 
+                    this.setState({
+                        copyScenario: {
+                            visible: true,
+                            instance: inst
+                        }
+                    });
+                }}
+            >Copy</Menu.Item>
         </Menu>
     }
 
 
     render() {
         const { session } = this.props;
-        const { addScenarioVisible } = this.state;
+        const { addScenarioVisible, copyScenario } = this.state;
         const scenarios = Array.from(this.scenarios.values()).map(({ scenario }) => scenario);
 
         return <div className="scenarios-wrapper">
@@ -258,6 +305,21 @@ export class Scenarios extends React.Component<ScenariosProps, ScenariosState> {
                     </Panel >)}
                 </Collapse>
             </div>
+            {
+                copyScenario.visible && 
+                <InputBox 
+                    visible={copyScenario.visible} 
+                    title={"Scenario Name"}
+                    onClose={() => { this.setState({ copyScenario: { visible: false, instance: undefined } }) }} 
+                    onSubmit={(value) => { 
+                        try {
+                            this.copyScenario(copyScenario.instance!, value);
+                        }
+                        finally {
+                            this.setState({ copyScenario: { visible: false, instance: undefined } });
+                        }
+                    }} />
+            }
         </div>
     }
 }
