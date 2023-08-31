@@ -30,4 +30,20 @@
         padding: 10px;
         overflow: auto;
     }
+
+    .message-data-view-wrapper {
+        .message-wrapper {
+            tr:hover {
+                background-color: rgb(40, 40, 40);
+
+                tr:hover {
+                    background-color: rgb(45, 45, 45);
+
+                    tr:hover {
+                        background-color: rgb(50, 50, 50);
+                    }
+                }
+            }
+        }
+    }
 }

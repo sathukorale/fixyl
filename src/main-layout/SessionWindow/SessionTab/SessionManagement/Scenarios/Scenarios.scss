@@ -108,6 +108,10 @@
                     background: rgb(50, 75, 50);
                 }
             }
+
+            .ant-collapse-item-active:not(:last-child) {
+                margin-bottom: 20px !important;
+            }
         }
 
         .ant-tree {

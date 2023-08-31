@@ -20,6 +20,10 @@
             align-content: center;
             justify-content: center;
             width: 100%;
+            flex-grow: 1;
+            flex-shrink: 1;
+            padding-right: 10px;
+            overflow: hidden;
 
             &-text {
                 width: 100%;
@@ -36,6 +40,8 @@
                 border-color: var(--danger);
                 color: var(--danger);
             }
+            flex-shrink: 0;
+            flex-grow: 0;
         }
 
         .status-indic {
